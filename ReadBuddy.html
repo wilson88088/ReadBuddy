@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ReadBuddy 閱讀小幫手</title>
+<style>
+  :root {
+    --primary: #4A90D9;
+    --primary-dark: #3A78C2;
+    --secondary: #FF8C42;
+    --success: #5CB85C;
+    --danger: #E74C3C;
+    --bg: #F0F4F8;
+    --card: #FFFFFF;
+    --text: #2C3E50;
+    --text-light: #7F8C8D;
+    --radius: 16px;
+    --shadow: 0 4px 15px rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* === Header === */
+  .app-header {
+    background: linear-gradient(135deg, var(--primary), #6BB5FF);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  }
+  .app-header .back-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 22px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .app-header .back-btn.visible { display: flex; }
+  .app-header h1 { font-size: 20px; font-weight: 700; }
+
+  /* === Pages === */
+  .page { display: none; padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 40px; }
+  .page.active { display: block; }
+
+  /* === Home Grid === */
+  .home-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .home-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 30px 16px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+  }
+  .home-card:active { transform: scale(0.96); }
+  .home-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+  .home-card .icon { font-size: 48px; margin-bottom: 12px; }
+  .home-card .label { font-size: 18px; font-weight: 600; }
+  .home-card:nth-child(1) { border-color: #4A90D9; }
+  .home-card:nth-child(2) { border-color: #FF8C42; }
+  .home-card:nth-child(3) { border-color: #5CB85C; }
+  .home-card:nth-child(4) { border-color: #9B59B6; }
+
+  /* === Cards === */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { font-size: 16px; margin-bottom: 12px; color: var(--primary); }
+
+  /* === Buttons === */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: var(--secondary); color: white; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+  .btn-block { width: 100%; }
+  .btn-sm { padding: 8px 16px; font-size: 14px; border-radius: 8px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* === Form === */
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: var(--text-light); }
+  .form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #E0E6ED;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    background: #FAFBFC;
+  }
+  .form-input:focus { outline: none; border-color: var(--primary); background: white; }
+  textarea.form-input { min-height: 160px; resize: vertical; line-height: 1.8; }
+
+  /* === Article List === */
+  .article-item {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .article-item:active { transform: scale(0.98); }
+  .article-item .info h4 { font-size: 16px; margin-bottom: 4px; }
+  .article-item .info p { font-size: 13px; color: var(--text-light); }
+  .article-item .actions { display: flex; gap: 8px; }
+  .article-item .actions button {
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+  }
+  .article-item .actions .edit-btn { background: #EBF5FF; color: var(--primary); }
+  .article-item .actions .del-btn { background: #FDECEC; color: var(--danger); }
+
+  /* === Reading View === */
+  .reading-content {
+    line-height: 2.2;
+    font-size: 20px;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+  }
+  .reading-content .paragraph {
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-left: 4px solid transparent;
+  }
+  .reading-content .paragraph:hover { background: #F0F7FF; }
+  .reading-content .paragraph.active {
+    background: #E3F0FF;
+    border-left-color: var(--primary);
+  }
+  .reading-content .paragraph.speaking {
+    background: #FFF8E1;
+    border-left-color: var(--secondary);
+  }
+
+  /* === Controls === */
+  .controls {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #E0E6ED;
+    padding: 16px 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0 -20px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  }
+
+  /* === Speed Control === */
+  .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: #F8F9FA;
+    border-radius: 12px;
+  }
+  .speed-control label { font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .speed-control input[type=range] { flex: 1; accent-color: var(--primary); }
+  .speed-control .speed-val { font-size: 14px; font-weight: 700; color: var(--primary); min-width: 40px; text-align: center; }
+
+  /* === Record Items === */
+  .record-item {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  .record-item h4 { font-size: 15px; margin-bottom: 6px; }
+  .record-item .meta { font-size: 13px; color: var(--text-light); margin-bottom: 8px; }
+  .record-item .meta span { margin-right: 16px; }
+  .record-item audio { width: 100%; margin-top: 8px; }
+  .record-item .del-audio-btn { margin-top: 8px; }
+
+  /* === Recording Indicator === */
+  .recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--danger);
+    margin-bottom: 12px;
+  }
+  .recording-dot {
+    width: 14px; height: 14px;
+    background: var(--danger);
+    border-radius: 50%;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* === Empty State === */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-light);
+  }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-state p { font-size: 16px; }
+
+  /* === Tabs === */
+  .tabs {
+    display: flex;
+    background: #E8EDF2;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-light);
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+  /* === Modal === */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal h2 { font-size: 18px; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  /* === Toast === */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 300;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* === Responsive === */
+  @media (max-width: 400px) {
+    .home-card { padding: 20px 12px; }
+    .home-card .icon { font-size: 36px; }
+    .home-card .label { font-size: 16px; }
+    .reading-content { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="app-header">
+  <button class="back-btn" id="backBtn" onclick="goBack()">&#8592;</button>
+  <h1 id="headerTitle">ReadBuddy 閱讀小幫手</h1>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== PAGE: Home ===== -->
+<div class="page active" id="page-home">
+  <div class="home-grid">
+    <div class="home-card" onclick="navigateTo('reading-list')">
+      <div class="icon">&#128214;</div>
+      <div class="label">閱讀</div>
+    </div>
+    <div class="home-card" onclick="navigateTo('review')">
+      <div class="icon">&#127908;</div>
+      <div class="label">複習</div>
+    </div>
+    <div class="home-card" onclick="navigateTo('records')">
+      <div class="icon">&#128202;</div>
+      <div class="label">紀錄</div>
+    </div>
+    <div class="home-card" onclick="navigateTo('settings')">
+      <div class="icon">&#9881;&#65039;</div>
+      <div class="label">設定</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: Settings ===== -->
+<div class="page" id="page-settings">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h2>文章管理</h2>
+    <button class="btn btn-primary btn-sm" onclick="openArticleModal()">+ 新增文章</button>
+  </div>
+  <div id="articleList"></div>
+</div>
+
+<!-- ===== PAGE: Reading List ===== -->
+<div class="page" id="page-reading-list">
+  <h2 style="margin-bottom:16px;">選擇文章</h2>
+  <div id="readingArticleList"></div>
+</div>
+
+<!-- ===== PAGE: Reading ===== -->
+<div class="page" id="page-reading">
+  <h2 id="readingTitle" style="margin-bottom:12px;"></h2>
+  <div class="speed-control">
+    <label>語速</label>
+    <input type="range" id="speedRange" min="0.5" max="2" step="0.1" value="0.8">
+    <span class="speed-val" id="speedVal">0.8x</span>
+  </div>
+  <div class="reading-content" id="readingContent"></div>
+  <div class="controls" id="readingControls">
+    <button class="btn btn-primary" id="btnPlayAll" onclick="playAll()">&#9654; 整篇朗讀</button>
+    <button class="btn btn-secondary" id="btnPause" onclick="togglePause()" style="display:none;">&#10074;&#10074; 暫停</button>
+    <button class="btn btn-danger" id="btnStop" onclick="stopReading()" style="display:none;">&#9632; 停止</button>
+  </div>
+</div>
+
+<!-- ===== PAGE: Review ===== -->
+<div class="page" id="page-review">
+  <h2 style="margin-bottom:16px;">複習錄音</h2>
+  <div id="reviewArticleSelect" style="margin-bottom:16px;"></div>
+  <div class="card" id="reviewRecordingCard" style="display:none;">
+    <h3 id="reviewArticleTitle"></h3>
+    <div class="reading-content" id="reviewContent" style="font-size:18px;margin-bottom:16px;"></div>
+    <div class="recording-indicator" id="recordingIndicator" style="display:none;">
+      <div class="recording-dot"></div>
+      <span>錄音中...</span>
+      <span id="recordTimer">00:00</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-danger" id="btnRecord" onclick="toggleRecording()">&#127908; 開始錄音</button>
+      <button class="btn btn-primary" id="btnPlayRecording" onclick="playRecording()" style="display:none;">&#9654; 播放錄音</button>
+      <button class="btn btn-success" id="btnSaveRecording" onclick="saveRecording()" style="display:none;">&#128190; 儲存錄音</button>
+    </div>
+    <audio id="reviewAudio" style="width:100%;margin-top:12px;display:none;" controls></audio>
+  </div>
+</div>
+
+<!-- ===== PAGE: Records ===== -->
+<div class="page" id="page-records">
+  <h2 style="margin-bottom:16px;">學習紀錄</h2>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchRecordTab('reading')">朗讀紀錄</button>
+    <button class="tab-btn" onclick="switchRecordTab('audio')">錄音紀錄</button>
+  </div>
+  <div id="readingRecords"></div>
+  <div id="audioRecords" style="display:none;"></div>
+</div>
+
+<!-- ===== Article Modal ===== -->
+<div class="modal-overlay" id="articleModal">
+  <div class="modal">
+    <h2 id="modalTitle">新增文章</h2>
+    <div class="form-group">
+      <label>文章標題</label>
+      <input type="text" class="form-input" id="inputTitle" placeholder="輸入文章標題">
+    </div>
+    <div class="form-group">
+      <label>文章內容（空行分段）</label>
+      <textarea class="form-input" id="inputContent" placeholder="貼上或輸入文章內容...&#10;&#10;空一行即為新段落"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeArticleModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveArticle()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================================
+// IndexedDB Setup
+// ========================================
+const DB_NAME = 'ReadBuddyDB';
+const DB_VERSION = 1;
+let db;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('articles')) {
+        d.createObjectStore('articles', { keyPath: 'id' });
+      }
+      if (!d.objectStoreNames.contains('readingLogs')) {
+        const store = d.createObjectStore('readingLogs', { keyPath: 'id', autoIncrement: true });
+        store.createIndex('articleId', 'articleId', { unique: false });
+      }
+      if (!d.objectStoreNames.contains('recordings')) {
+        const store = d.createObjectStore('recordings', { keyPath: 'id', autoIncrement: true });
+        store.createIndex('articleId', 'articleId', { unique: false });
+      }
+    };
+    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    req.onerror = (e) => reject(e);
+  });
+}
+
+function dbAdd(store, data) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    const s = tx.objectStore(store);
+    const r = s.put(data);
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const r = tx.objectStore(store).getAll();
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+
+function dbGet(store, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const r = tx.objectStore(store).get(id);
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+
+function dbDelete(store, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    const r = tx.objectStore(store).delete(id);
+    r.onsuccess = () => resolve();
+    r.onerror = () => reject(r.error);
+  });
+}
+
+function dbGetByIndex(store, indexName, value) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const idx = tx.objectStore(store).index(indexName);
+    const r = idx.getAll(value);
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+
+// ========================================
+// Navigation
+// ========================================
+let navStack = ['home'];
+const pageTitles = {
+  'home': 'ReadBuddy 閱讀小幫手',
+  'settings': '文章管理',
+  'reading-list': '選擇文章',
+  'reading': '閱讀',
+  'review': '複習錄音',
+  'records': '學習紀錄'
+};
+
+function navigateTo(pageId, noStack) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  if (!noStack) navStack.push(pageId);
+  updateHeader();
+  onPageEnter(pageId);
+}
+
+function goBack() {
+  stopReading();
+  stopRecordingIfNeeded();
+  if (navStack.length > 1) {
+    navStack.pop();
+    const prev = navStack[navStack.length - 1];
+    navigateTo(prev, true);
+  }
+}
+
+function updateHeader() {
+  const current = navStack[navStack.length - 1];
+  document.getElementById('headerTitle').textContent = pageTitles[current] || 'ReadBuddy';
+  document.getElementById('backBtn').classList.toggle('visible', current !== 'home');
+}
+
+async function onPageEnter(pageId) {
+  if (pageId === 'settings') await renderArticleList();
+  if (pageId === 'reading-list') await renderReadingArticleList();
+  if (pageId === 'review') await renderReviewPage();
+  if (pageId === 'records') await renderRecords();
+}
+
+// ========================================
+// Toast
+// ========================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ========================================
+// Settings: Article CRUD
+// ========================================
+let editingArticleId = null;
+
+function openArticleModal(articleId) {
+  editingArticleId = articleId || null;
+  document.getElementById('modalTitle').textContent = articleId ? '編輯文章' : '新增文章';
+  document.getElementById('inputTitle').value = '';
+  document.getElementById('inputContent').value = '';
+
+  if (articleId) {
+    dbGet('articles', articleId).then(a => {
+      if (a) {
+        document.getElementById('inputTitle').value = a.title;
+        document.getElementById('inputContent').value = a.paragraphs.join('\n\n');
+      }
+    });
+  }
+  document.getElementById('articleModal').classList.add('active');
+}
+
+function closeArticleModal() {
+  document.getElementById('articleModal').classList.remove('active');
+  editingArticleId = null;
+}
+
+async function saveArticle() {
+  const title = document.getElementById('inputTitle').value.trim();
+  const content = document.getElementById('inputContent').value.trim();
+  if (!title || !content) { showToast('請輸入標題和內容'); return; }
+
+  const paragraphs = content.split(/\n\s*\n/).map(p => p.trim()).filter(p => p);
+  const article = {
+    id: editingArticleId || 'art_' + Date.now(),
+    title,
+    paragraphs,
+    createdAt: editingArticleId ? undefined : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  if (editingArticleId) {
+    const existing = await dbGet('articles', editingArticleId);
+    if (existing) article.createdAt = existing.createdAt;
+  }
+
+  await dbAdd('articles', article);
+  closeArticleModal();
+  showToast(editingArticleId ? '文章已更新' : '文章已新增');
+  await renderArticleList();
+}
+
+async function deleteArticle(id) {
+  if (!confirm('確定刪除這篇文章？')) return;
+  await dbDelete('articles', id);
+  showToast('文章已刪除');
+  await renderArticleList();
+}
+
+async function renderArticleList() {
+  const articles = await dbGetAll('articles');
+  const container = document.getElementById('articleList');
+  if (articles.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#128221;</div><p>還沒有文章，點選右上角新增</p></div>';
+    return;
+  }
+  container.innerHTML = articles.map(a => `
+    <div class="article-item">
+      <div class="info">
+        <h4>${escHtml(a.title)}</h4>
+        <p>${a.paragraphs.length} 段落 · ${a.paragraphs.join('').length} 字</p>
+      </div>
+      <div class="actions">
+        <button class="edit-btn" onclick="event.stopPropagation();openArticleModal('${a.id}')">&#9998;</button>
+        <button class="del-btn" onclick="event.stopPropagation();deleteArticle('${a.id}')">&#128465;</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========================================
+// Reading List
+// ========================================
+async function renderReadingArticleList() {
+  const articles = await dbGetAll('articles');
+  const container = document.getElementById('readingArticleList');
+  if (articles.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#128214;</div><p>請先到「設定」新增文章</p></div>';
+    return;
+  }
+  container.innerHTML = articles.map(a => `
+    <div class="article-item" onclick="openReading('${a.id}')">
+      <div class="info">
+        <h4>${escHtml(a.title)}</h4>
+        <p>${a.paragraphs.length} 段落 · ${a.paragraphs.join('').length} 字</p>
+      </div>
+      <div style="font-size:24px;color:var(--primary);">&#9654;</div>
+    </div>
+  `).join('');
+}
+
+// ========================================
+// Reading (TTS)
+// ========================================
+let currentArticle = null;
+let currentParaIndex = -1;
+let isSpeaking = false;
+let isPaused = false;
+let readStartTime = null;
+
+document.getElementById('speedRange').addEventListener('input', function() {
+  document.getElementById('speedVal').textContent = this.value + 'x';
+});
+
+async function openReading(articleId) {
+  currentArticle = await dbGet('articles', articleId);
+  if (!currentArticle) return;
+  document.getElementById('readingTitle').textContent = currentArticle.title;
+
+  const container = document.getElementById('readingContent');
+  container.innerHTML = currentArticle.paragraphs.map((p, i) => `
+    <div class="paragraph" data-index="${i}" onclick="playParagraph(${i})">${escHtml(p)}</div>
+  `).join('');
+
+  resetReadingUI();
+  navigateTo('reading');
+}
+
+function resetReadingUI() {
+  document.getElementById('btnPlayAll').style.display = '';
+  document.getElementById('btnPause').style.display = 'none';
+  document.getElementById('btnStop').style.display = 'none';
+  document.querySelectorAll('.paragraph').forEach(p => {
+    p.classList.remove('active', 'speaking');
+  });
+  currentParaIndex = -1;
+  isSpeaking = false;
+  isPaused = false;
+}
+
+function playAll() {
+  if (!currentArticle) return;
+  currentParaIndex = 0;
+  readStartTime = Date.now();
+  speakParagraph(0, true);
+  document.getElementById('btnPlayAll').style.display = 'none';
+  document.getElementById('btnPause').style.display = '';
+  document.getElementById('btnStop').style.display = '';
+}
+
+function playParagraph(index) {
+  if (isSpeaking) stopReading();
+  currentParaIndex = index;
+  readStartTime = Date.now();
+  speakParagraph(index, false);
+  document.getElementById('btnPlayAll').style.display = 'none';
+  document.getElementById('btnPause').style.display = '';
+  document.getElementById('btnStop').style.display = '';
+}
+
+function speakParagraph(index, continueNext) {
+  if (!currentArticle || index >= currentArticle.paragraphs.length) {
+    finishReading();
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  isSpeaking = true;
+  isPaused = false;
+
+  highlightParagraph(index);
+
+  const utterance = new SpeechSynthesisUtterance(currentArticle.paragraphs[index]);
+  utterance.lang = 'zh-TW';
+  utterance.rate = parseFloat(document.getElementById('speedRange').value);
+
+  utterance.onend = () => {
+    if (continueNext && isSpeaking) {
+      currentParaIndex = index + 1;
+      speakParagraph(index + 1, true);
+    } else if (!continueNext) {
+      finishReading();
+    }
+  };
+
+  utterance.onerror = (e) => {
+    if (e.error !== 'canceled') finishReading();
+  };
+
+  window.speechSynthesis.speak(utterance);
+  updatePauseBtn();
+}
+
+function togglePause() {
+  if (isPaused) {
+    window.speechSynthesis.resume();
+    isPaused = false;
+  } else {
+    window.speechSynthesis.pause();
+    isPaused = true;
+  }
+  updatePauseBtn();
+}
+
+function updatePauseBtn() {
+  const btn = document.getElementById('btnPause');
+  btn.innerHTML = isPaused ? '&#9654; 繼續' : '&#10074;&#10074; 暫停';
+}
+
+function stopReading() {
+  window.speechSynthesis.cancel();
+  if (isSpeaking && readStartTime) {
+    logReading();
+  }
+  isSpeaking = false;
+  isPaused = false;
+  resetReadingUI();
+}
+
+function finishReading() {
+  if (readStartTime) logReading();
+  isSpeaking = false;
+  resetReadingUI();
+  showToast('朗讀完畢！');
+}
+
+async function logReading() {
+  if (!currentArticle || !readStartTime) return;
+  const duration = Math.round((Date.now() - readStartTime) / 1000);
+  await dbAdd('readingLogs', {
+    articleId: currentArticle.id,
+    articleTitle: currentArticle.title,
+    date: new Date().toISOString(),
+    durationSeconds: duration
+  });
+  readStartTime = null;
+}
+
+function highlightParagraph(index) {
+  document.querySelectorAll('.paragraph').forEach(p => {
+    p.classList.remove('active', 'speaking');
+  });
+  const el = document.querySelector(`.paragraph[data-index="${index}"]`);
+  if (el) {
+    el.classList.add('speaking');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// ========================================
+// Review (Recording)
+// ========================================
+let mediaRecorder = null;
+let audioChunks = [];
+let recordedBlob = null;
+let recordTimerInterval = null;
+let recordSeconds = 0;
+let reviewArticleId = null;
+
+async function renderReviewPage() {
+  const articles = await dbGetAll('articles');
+  const container = document.getElementById('reviewArticleSelect');
+  if (articles.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#127908;</div><p>請先到「設定」新增文章</p></div>';
+    document.getElementById('reviewRecordingCard').style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = articles.map(a => `
+    <div class="article-item" onclick="selectReviewArticle('${a.id}')">
+      <div class="info">
+        <h4>${escHtml(a.title)}</h4>
+        <p>${a.paragraphs.length} 段落</p>
+      </div>
+      <div style="font-size:20px;color:var(--secondary);">&#127908;</div>
+    </div>
+  `).join('');
+}
+
+async function selectReviewArticle(articleId) {
+  const article = await dbGet('articles', articleId);
+  if (!article) return;
+  reviewArticleId = articleId;
+  document.getElementById('reviewArticleTitle').textContent = article.title;
+  document.getElementById('reviewContent').innerHTML = article.paragraphs.map(p => `<p>${escHtml(p)}</p>`).join('');
+  document.getElementById('reviewRecordingCard').style.display = '';
+  resetRecordingUI();
+}
+
+function resetRecordingUI() {
+  document.getElementById('btnRecord').innerHTML = '&#127908; 開始錄音';
+  document.getElementById('btnRecord').className = 'btn btn-danger';
+  document.getElementById('btnPlayRecording').style.display = 'none';
+  document.getElementById('btnSaveRecording').style.display = 'none';
+  document.getElementById('recordingIndicator').style.display = 'none';
+  document.getElementById('reviewAudio').style.display = 'none';
+  recordedBlob = null;
+}
+
+async function toggleRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    clearInterval(recordTimerInterval);
+    document.getElementById('btnRecord').innerHTML = '&#127908; 重新錄音';
+    document.getElementById('recordingIndicator').style.display = 'none';
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(recordedBlob);
+      const audio = document.getElementById('reviewAudio');
+      audio.src = url;
+      audio.style.display = '';
+      document.getElementById('btnPlayRecording').style.display = '';
+      document.getElementById('btnSaveRecording').style.display = '';
+      stream.getTracks().forEach(t => t.stop());
+      showToast('錄音完成');
+    };
+
+    mediaRecorder.start();
+    recordSeconds = 0;
+    document.getElementById('recordTimer').textContent = '00:00';
+    document.getElementById('recordingIndicator').style.display = 'flex';
+    document.getElementById('btnRecord').innerHTML = '&#9632; 停止錄音';
+    document.getElementById('btnPlayRecording').style.display = 'none';
+    document.getElementById('btnSaveRecording').style.display = 'none';
+
+    recordTimerInterval = setInterval(() => {
+      recordSeconds++;
+      const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+      const s = String(recordSeconds % 60).padStart(2, '0');
+      document.getElementById('recordTimer').textContent = m + ':' + s;
+    }, 1000);
+
+  } catch (err) {
+    showToast('無法取得麥克風權限');
+  }
+}
+
+function stopRecordingIfNeeded() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    clearInterval(recordTimerInterval);
+  }
+}
+
+function playRecording() {
+  const audio = document.getElementById('reviewAudio');
+  audio.play();
+}
+
+async function saveRecording() {
+  if (!recordedBlob || !reviewArticleId) return;
+
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    await dbAdd('recordings', {
+      articleId: reviewArticleId,
+      articleTitle: document.getElementById('reviewArticleTitle').textContent,
+      date: new Date().toISOString(),
+      audioData: reader.result,
+      durationSeconds: recordSeconds
+    });
+    showToast('錄音已儲存');
+    resetRecordingUI();
+  };
+  reader.readAsDataURL(recordedBlob);
+}
+
+// ========================================
+// Records
+// ========================================
+function switchRecordTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('readingRecords').style.display = tab === 'reading' ? '' : 'none';
+  document.getElementById('audioRecords').style.display = tab === 'audio' ? '' : 'none';
+}
+
+async function renderRecords() {
+  // Reading logs
+  const logs = await dbGetAll('readingLogs');
+  const logContainer = document.getElementById('readingRecords');
+
+  if (logs.length === 0) {
+    logContainer.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div><p>還沒有朗讀紀錄</p></div>';
+  } else {
+    // Group by article
+    const grouped = {};
+    logs.forEach(l => {
+      if (!grouped[l.articleId]) {
+        grouped[l.articleId] = { title: l.articleTitle, count: 0, totalDuration: 0, lastDate: l.date };
+      }
+      grouped[l.articleId].count++;
+      grouped[l.articleId].totalDuration += l.durationSeconds;
+      if (l.date > grouped[l.articleId].lastDate) grouped[l.articleId].lastDate = l.date;
+    });
+
+    logContainer.innerHTML = Object.entries(grouped).map(([id, g]) => `
+      <div class="record-item">
+        <h4>${escHtml(g.title)}</h4>
+        <div class="meta">
+          <span>&#128337; 朗讀 ${g.count} 次</span>
+          <span>&#9201; 共 ${formatDuration(g.totalDuration)}</span>
+        </div>
+        <div class="meta">
+          <span>最近: ${formatDate(g.lastDate)}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Audio recordings
+  const recordings = await dbGetAll('recordings');
+  const audioContainer = document.getElementById('audioRecords');
+
+  if (recordings.length === 0) {
+    audioContainer.innerHTML = '<div class="empty-state"><div class="icon">&#127908;</div><p>還沒有錄音紀錄</p></div>';
+  } else {
+    audioContainer.innerHTML = recordings.sort((a, b) => b.date.localeCompare(a.date)).map(r => `
+      <div class="record-item">
+        <h4>${escHtml(r.articleTitle)}</h4>
+        <div class="meta">
+          <span>&#128197; ${formatDate(r.date)}</span>
+          <span>&#9201; ${formatDuration(r.durationSeconds)}</span>
+        </div>
+        <audio controls src="${r.audioData}" style="width:100%;"></audio>
+        <button class="btn btn-danger btn-sm del-audio-btn" onclick="deleteRecording(${r.id})">&#128465; 刪除</button>
+      </div>
+    `).join('');
+  }
+}
+
+async function deleteRecording(id) {
+  if (!confirm('確定刪除這筆錄音？')) return;
+  await dbDelete('recordings', id);
+  showToast('錄音已刪除');
+  await renderRecords();
+}
+
+// ========================================
+// Helpers
+// ========================================
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function formatDuration(sec) {
+  if (sec < 60) return sec + ' 秒';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + ' 分 ' + s + ' 秒';
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
+    String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+// ========================================
+// Init
+// ========================================
+openDB().then(() => {
+  updateHeader();
+}).catch(err => {
+  console.error('DB Error:', err);
+  showToast('資料庫載入失敗');
+});
+</script>
+
+</body>
+</html>

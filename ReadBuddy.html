@@ -4,426 +4,781 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ReadBuddy 閱讀小幫手</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --primary: #4A90D9;
-    --primary-dark: #3A78C2;
-    --secondary: #FF8C42;
-    --success: #5CB85C;
-    --danger: #E74C3C;
-    --bg: #F0F4F8;
-    --card: #FFFFFF;
-    --text: #2C3E50;
-    --text-light: #7F8C8D;
-    --radius: 16px;
-    --shadow: 0 4px 15px rgba(0,0,0,0.08);
-  }
+:root {
+  --mint: #C8E6C9;
+  --mint-light: #E8F5E9;
+  --mint-bg: #EAF5EA;
+  --green: #4CAF50;
+  --green-dark: #388E3C;
+  --dark: #1B2838;
+  --dark-card: #223044;
+  --dark-surface: #2A3A50;
+  --accent: #66BB6A;
+  --accent-warm: #FFB74D;
+  --white: #FFFFFF;
+  --text: #2C3E50;
+  --text-secondary: #78909C;
+  --radius: 20px;
+  --radius-sm: 14px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: var(--mint-bg);
+  color: var(--text);
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow-x: hidden;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* ===== Status Bar ===== */
+.status-bar {
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+}
 
-  body {
-    font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* ===== Header ===== */
+.app-header {
+  padding: 0 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.back-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.7);
+  font-size: 20px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  color: var(--text);
+}
+.back-btn.visible { display: flex; }
+.header-title {
+  font-size: 22px;
+  font-weight: 700;
+  flex: 1;
+}
+.header-icon {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.header-icon span {
+  width: 32px; height: 32px;
+  background: var(--green);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+}
 
-  /* === Header === */
-  .app-header {
-    background: linear-gradient(135deg, var(--primary), #6BB5FF);
-    color: white;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-  }
-  .app-header .back-btn {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    font-size: 22px;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-  .app-header .back-btn.visible { display: flex; }
-  .app-header h1 { font-size: 20px; font-weight: 700; }
+/* ===== Pages ===== */
+.page { display:none; padding:0 20px 100px; }
+.page.active { display:block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-  /* === Pages === */
-  .page { display: none; padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 40px; }
-  .page.active { display: block; }
+/* ===== Home ===== */
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.section-title .view-all {
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 500;
+  cursor: pointer;
+}
 
-  /* === Home Grid === */
-  .home-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 20px;
-  }
-  .home-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 30px 16px;
-    text-align: center;
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 2px solid transparent;
-  }
-  .home-card:active { transform: scale(0.96); }
-  .home-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
-  .home-card .icon { font-size: 48px; margin-bottom: 12px; }
-  .home-card .label { font-size: 18px; font-weight: 600; }
-  .home-card:nth-child(1) { border-color: #4A90D9; }
-  .home-card:nth-child(2) { border-color: #FF8C42; }
-  .home-card:nth-child(3) { border-color: #5CB85C; }
-  .home-card:nth-child(4) { border-color: #9B59B6; }
+/* Horizontal scroll cards */
+.scroll-row {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-row::-webkit-scrollbar { display: none; }
 
-  /* === Cards === */
-  .card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow);
-  }
-  .card h3 { font-size: 16px; margin-bottom: 12px; color: var(--primary); }
+.feature-card {
+  flex: 0 0 140px;
+  scroll-snap-align: start;
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.feature-card:active { transform: scale(0.96); }
+.feature-card .card-img {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  position: relative;
+}
+.feature-card .card-img .badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--green);
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.feature-card .card-body { padding: 10px 12px; }
+.feature-card .card-body h4 { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.feature-card .card-body p { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 
-  /* === Buttons === */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-  .btn:active { transform: scale(0.96); }
-  .btn-primary { background: var(--primary); color: white; }
-  .btn-primary:hover { background: var(--primary-dark); }
-  .btn-secondary { background: var(--secondary); color: white; }
-  .btn-success { background: var(--success); color: white; }
-  .btn-danger { background: var(--danger); color: white; }
-  .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-  .btn-block { width: 100%; }
-  .btn-sm { padding: 8px 16px; font-size: 14px; border-radius: 8px; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Category pills */
+.pill-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+.pill-row::-webkit-scrollbar { display: none; }
+.pill {
+  flex: 0 0 auto;
+  padding: 8px 20px;
+  border-radius: 30px;
+  background: var(--white);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid #E0E0E0;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.pill.active { background: var(--green); color: white; border-color: var(--green); }
 
-  /* === Form === */
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: var(--text-light); }
-  .form-input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #E0E6ED;
-    border-radius: 12px;
-    font-size: 16px;
-    font-family: inherit;
-    transition: border-color 0.2s;
-    background: #FAFBFC;
-  }
-  .form-input:focus { outline: none; border-color: var(--primary); background: white; }
-  textarea.form-input { min-height: 160px; resize: vertical; line-height: 1.8; }
+/* Home grid */
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.home-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px 14px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.home-card:active { transform: scale(0.96); }
+.home-card .icon-circle {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+.home-card .label { font-size: 15px; font-weight: 600; }
+.home-card .sublabel { font-size: 12px; color: var(--text-secondary); }
 
-  /* === Article List === */
-  .article-item {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-  .article-item:active { transform: scale(0.98); }
-  .article-item .info h4 { font-size: 16px; margin-bottom: 4px; }
-  .article-item .info p { font-size: 13px; color: var(--text-light); }
-  .article-item .actions { display: flex; gap: 8px; }
-  .article-item .actions button {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
-  }
-  .article-item .actions .edit-btn { background: #EBF5FF; color: var(--primary); }
-  .article-item .actions .del-btn { background: #FDECEC; color: var(--danger); }
+/* ===== Article List ===== */
+.article-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.article-card:active { transform: scale(0.97); }
+.article-card .thumb {
+  width: 60px; height: 60px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+.article-card .info { flex: 1; min-width: 0; }
+.article-card .info h4 { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.article-card .info .meta { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+.article-card .actions { display: flex; gap: 6px; }
+.article-card .actions button {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-btn-edit { background: #E8F5E9; color: var(--green); }
+.icon-btn-del { background: #FFEBEE; color: #E53935; }
 
-  /* === Reading View === */
-  .reading-content {
-    line-height: 2.2;
-    font-size: 20px;
-    margin-bottom: 20px;
-    white-space: pre-wrap;
-  }
-  .reading-content .paragraph {
-    padding: 12px 16px;
-    border-radius: 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-    border-left: 4px solid transparent;
-  }
-  .reading-content .paragraph:hover { background: #F0F7FF; }
-  .reading-content .paragraph.active {
-    background: #E3F0FF;
-    border-left-color: var(--primary);
-  }
-  .reading-content .paragraph.speaking {
-    background: #FFF8E1;
-    border-left-color: var(--secondary);
-  }
+/* ===== Reading View (Dark) ===== */
+.reading-page { background: var(--dark); min-height: 100vh; }
+.reading-page .status-bar { color: #B0BEC5; }
+.reading-page .back-btn { background: rgba(255,255,255,0.1); color: white; }
 
-  /* === Controls === */
-  .controls {
-    position: sticky;
-    bottom: 0;
-    background: white;
-    border-top: 1px solid #E0E6ED;
-    padding: 16px 20px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 0 -20px;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-  }
+.reading-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 20px;
+}
+.mode-toggle {
+  display: flex;
+  background: var(--dark-surface);
+  border-radius: 25px;
+  padding: 4px;
+}
+.mode-btn {
+  padding: 8px 24px;
+  border-radius: 22px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  color: #78909C;
+  background: transparent;
+}
+.mode-btn.active { background: var(--green); color: white; }
 
-  /* === Speed Control === */
-  .speed-control {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-    padding: 12px 16px;
-    background: #F8F9FA;
-    border-radius: 12px;
-  }
-  .speed-control label { font-size: 14px; font-weight: 600; white-space: nowrap; }
-  .speed-control input[type=range] { flex: 1; accent-color: var(--primary); }
-  .speed-control .speed-val { font-size: 14px; font-weight: 700; color: var(--primary); min-width: 40px; text-align: center; }
+.reading-body {
+  padding: 0 20px 140px;
+}
+.chapter-title {
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.reading-text {
+  color: #CFD8DC;
+  font-size: 18px;
+  line-height: 2;
+}
+.reading-text .para {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-left: 3px solid transparent;
+}
+.reading-text .para:hover { background: rgba(255,255,255,0.04); }
+.reading-text .para.speaking {
+  background: rgba(102,187,106,0.12);
+  border-left-color: var(--accent);
+}
+.reading-text .para .highlight {
+  background: linear-gradient(120deg, rgba(102,187,106,0.35) 0%, rgba(102,187,106,0.15) 100%);
+  border-radius: 4px;
+  padding: 1px 3px;
+  color: #A5D6A7;
+}
 
-  /* === Record Items === */
-  .record-item {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow);
-  }
-  .record-item h4 { font-size: 15px; margin-bottom: 6px; }
-  .record-item .meta { font-size: 13px; color: var(--text-light); margin-bottom: 8px; }
-  .record-item .meta span { margin-right: 16px; }
-  .record-item audio { width: 100%; margin-top: 8px; }
-  .record-item .del-audio-btn { margin-top: 8px; }
+/* Font size control */
+.font-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.font-btn {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid #455A64;
+  background: var(--dark-surface);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.font-size-display {
+  background: var(--green);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  min-width: 60px;
+  text-align: center;
+}
 
-  /* === Recording Indicator === */
-  .recording-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--danger);
-    margin-bottom: 12px;
-  }
-  .recording-dot {
-    width: 14px; height: 14px;
-    background: var(--danger);
-    border-radius: 50%;
-    animation: blink 1s infinite;
-  }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+/* ===== Audio Player Bar ===== */
+.player-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--dark-card);
+  border-radius: 28px 28px 0 0;
+  padding: 20px 24px 28px;
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
+  z-index: 100;
+}
+.player-bar .progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.player-bar .time { font-size: 12px; color: #78909C; min-width: 50px; font-variant-numeric: tabular-nums; }
+.player-bar .time.right { text-align: right; }
+.progress-track {
+  flex: 1;
+  height: 4px;
+  background: #37474F;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.3s;
+}
+.progress-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translate(-50%, -50%);
+  width: 14px; height: 14px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
 
-  /* === Empty State === */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-light);
-  }
-  .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
-  .empty-state p { font-size: 16px; }
+.player-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.ctrl-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #B0BEC5;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.ctrl-btn:hover { color: white; }
+.ctrl-btn.play-btn {
+  width: 60px; height: 60px;
+  background: var(--green);
+  color: white;
+  font-size: 28px;
+  box-shadow: 0 4px 15px rgba(76,175,80,0.4);
+}
+.ctrl-btn.play-btn:active { transform: scale(0.93); }
 
-  /* === Tabs === */
-  .tabs {
-    display: flex;
-    background: #E8EDF2;
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 16px;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    background: transparent;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--text-light);
-    font-family: inherit;
-    transition: all 0.2s;
-  }
-  .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+/* ===== Light-mode controls ===== */
+.controls-light {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--white);
+  border-radius: 24px 24px 0 0;
+  padding: 16px 24px 28px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  z-index: 100;
+}
 
-  /* === Modal === */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 200;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: white;
-    border-radius: var(--radius);
-    padding: 24px;
-    width: 100%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  .modal h2 { font-size: 18px; margin-bottom: 16px; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 24px; border: none; border-radius: 14px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.btn:active { transform: scale(0.96); }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { background: var(--green-dark); }
+.btn-orange { background: var(--accent-warm); color: white; }
+.btn-red { background: #E53935; color: white; }
+.btn-outline { background: transparent; border: 2px solid var(--green); color: var(--green); }
+.btn-white { background: var(--white); color: var(--text); box-shadow: var(--shadow); }
+.btn-block { width: 100%; }
+.btn-sm { padding: 8px 16px; font-size: 13px; border-radius: 10px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* === Toast === */
-  .toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #333;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-size: 14px;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 300;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* ===== Form ===== */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--text-secondary); }
+.form-input {
+  width: 100%; padding: 14px 16px;
+  border: 2px solid #E0E0E0; border-radius: var(--radius-sm);
+  font-size: 16px; font-family: inherit;
+  background: #FAFAFA; transition: border-color 0.2s;
+}
+.form-input:focus { outline: none; border-color: var(--green); background: white; }
+textarea.form-input { min-height: 180px; resize: vertical; line-height: 1.8; }
 
-  /* === Responsive === */
-  @media (max-width: 400px) {
-    .home-card { padding: 20px 12px; }
-    .home-card .icon { font-size: 36px; }
-    .home-card .label { font-size: 16px; }
-    .reading-content { font-size: 18px; }
-  }
+/* ===== Speed Control ===== */
+.speed-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; background: var(--dark-surface); border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+.speed-bar label { font-size: 13px; font-weight: 600; color: #B0BEC5; white-space: nowrap; }
+.speed-bar input[type=range] { flex: 1; accent-color: var(--green); }
+.speed-bar .val { font-size: 14px; font-weight: 700; color: var(--accent); min-width: 40px; text-align: center; }
+
+/* ===== Review ===== */
+.review-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.review-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+.review-content { font-size: 16px; line-height: 1.9; color: var(--text); margin-bottom: 16px; max-height: 300px; overflow-y: auto; }
+
+.recording-indicator {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: #E53935; margin-bottom: 14px;
+}
+.rec-dot { width: 12px; height: 12px; background: #E53935; border-radius: 50%; animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ===== Records ===== */
+.tabs {
+  display: flex; background: var(--white); border-radius: 14px;
+  padding: 4px; margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.tab-btn {
+  flex: 1; padding: 10px; border: none; background: transparent;
+  border-radius: 12px; font-size: 14px; font-weight: 600;
+  cursor: pointer; color: var(--text-secondary); font-family: inherit;
+  transition: all 0.2s;
+}
+.tab-btn.active { background: var(--green); color: white; }
+
+.record-item {
+  background: var(--white); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
+}
+.record-item h4 { font-size: 15px; margin-bottom: 4px; }
+.record-item .meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; display: flex; gap: 12px; flex-wrap: wrap; }
+.record-item audio { width: 100%; margin-top: 8px; border-radius: 8px; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  display:none; position:fixed; top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.45); z-index:200;
+  justify-content:center; align-items:flex-end; padding:0;
+}
+.modal-overlay.active { display:flex; }
+.modal {
+  background: white; border-radius: 24px 24px 0 0;
+  padding: 28px 24px 32px; width: 100%; max-width: 480px;
+  max-height: 85vh; overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal h2 { font-size: 18px; margin-bottom: 20px; text-align: center; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions .btn { flex: 1; }
+
+/* ===== Empty ===== */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+.empty-state .icon { font-size: 56px; margin-bottom: 14px; }
+.empty-state p { font-size: 15px; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; bottom: 100px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--dark); color: white;
+  padding: 12px 28px; border-radius: 30px;
+  font-size: 14px; font-weight: 500;
+  opacity: 0; transition: all 0.3s; z-index: 300; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== Mascot ===== */
+.mascot {
+  width: 80px; height: 80px;
+  margin: 0 auto 8px;
+  font-size: 72px;
+  text-align: center;
+  line-height: 1;
+}
+
+/* ===== Voice / Lang Selectors ===== */
+.setting-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; background: var(--dark-surface); border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+.setting-row label { font-size: 13px; font-weight: 600; color: #B0BEC5; white-space: nowrap; min-width: 50px; }
+.setting-row select {
+  flex: 1; padding: 8px 12px; border-radius: 10px; border: 1.5px solid #455A64;
+  background: var(--dark); color: #CFD8DC; font-size: 14px; font-family: inherit;
+  appearance: auto;
+}
+.setting-row-light {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; background: #F5F5F5; border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+.setting-row-light label { font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; min-width: 50px; }
+.setting-row-light select {
+  flex: 1; padding: 8px 12px; border-radius: 10px; border: 1.5px solid #E0E0E0;
+  background: white; color: var(--text); font-size: 14px; font-family: inherit;
+}
+.lang-toggle {
+  display: flex; background: var(--dark-surface); border-radius: 12px; padding: 3px; gap: 2px;
+}
+.lang-btn {
+  padding: 6px 16px; border-radius: 10px; border: none;
+  font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+  color: #78909C; background: transparent; transition: all 0.2s;
+}
+.lang-btn.active { background: var(--green); color: white; }
+
+/* ===== Import ===== */
+.import-row {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+.import-row .btn { flex: 1; }
 </style>
 </head>
 <body>
-
-<!-- Header -->
-<div class="app-header">
-  <button class="back-btn" id="backBtn" onclick="goBack()">&#8592;</button>
-  <h1 id="headerTitle">ReadBuddy 閱讀小幫手</h1>
-</div>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <!-- ===== PAGE: Home ===== -->
 <div class="page active" id="page-home">
+  <div class="status-bar">
+    <span id="clockDisplay">9:41</span>
+    <span></span>
+  </div>
+  <div class="app-header">
+    <div class="header-icon"><span>&#128214;</span></div>
+    <div class="header-title">ReadBuddy</div>
+  </div>
+
+  <div class="section-title">功能選單</div>
   <div class="home-grid">
     <div class="home-card" onclick="navigateTo('reading-list')">
-      <div class="icon">&#128214;</div>
+      <div class="icon-circle" style="background:#E8F5E9;">&#128214;</div>
       <div class="label">閱讀</div>
+      <div class="sublabel">朗讀練習</div>
     </div>
     <div class="home-card" onclick="navigateTo('review')">
-      <div class="icon">&#127908;</div>
+      <div class="icon-circle" style="background:#FFF3E0;">&#127908;</div>
       <div class="label">複習</div>
+      <div class="sublabel">錄音練習</div>
     </div>
     <div class="home-card" onclick="navigateTo('records')">
-      <div class="icon">&#128202;</div>
+      <div class="icon-circle" style="background:#E3F2FD;">&#128202;</div>
       <div class="label">紀錄</div>
+      <div class="sublabel">學習歷程</div>
     </div>
     <div class="home-card" onclick="navigateTo('settings')">
-      <div class="icon">&#9881;&#65039;</div>
+      <div class="icon-circle" style="background:#F3E5F5;">&#9881;&#65039;</div>
       <div class="label">設定</div>
+      <div class="sublabel">文章管理</div>
     </div>
+  </div>
+
+  <div class="section-title">最近文章 <span class="view-all" onclick="navigateTo('reading-list')">查看全部</span></div>
+  <div class="scroll-row" id="recentArticles">
+    <div style="flex:0 0 100%;text-align:center;padding:30px 0;color:var(--text-secondary);font-size:14px;">尚無文章，請先到設定新增</div>
   </div>
 </div>
 
 <!-- ===== PAGE: Settings ===== -->
 <div class="page" id="page-settings">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <h2>文章管理</h2>
-    <button class="btn btn-primary btn-sm" onclick="openArticleModal()">+ 新增文章</button>
+  <div class="status-bar"><span id="clock2">9:41</span><span></span></div>
+  <div class="app-header">
+    <button class="back-btn visible" onclick="goBack()">&#8592;</button>
+    <div class="header-title">文章管理</div>
   </div>
+  <div class="import-row">
+    <button class="btn btn-green" onclick="openArticleModal()" style="flex:1;">+ 新增文章</button>
+    <button class="btn btn-outline" onclick="document.getElementById('fileImport').click()" style="flex:1;">&#128194; 匯入文章</button>
+  </div>
+  <input type="file" id="fileImport" accept=".txt,.md,.text" style="display:none;" onchange="importArticle(event)">
   <div id="articleList"></div>
 </div>
 
 <!-- ===== PAGE: Reading List ===== -->
 <div class="page" id="page-reading-list">
-  <h2 style="margin-bottom:16px;">選擇文章</h2>
+  <div class="status-bar"><span id="clock3">9:41</span><span></span></div>
+  <div class="app-header">
+    <button class="back-btn visible" onclick="goBack()">&#8592;</button>
+    <div class="header-title">選擇文章</div>
+  </div>
+  <div class="pill-row">
+    <div class="pill active">全部</div>
+  </div>
   <div id="readingArticleList"></div>
 </div>
 
-<!-- ===== PAGE: Reading ===== -->
-<div class="page" id="page-reading">
-  <h2 id="readingTitle" style="margin-bottom:12px;"></h2>
-  <div class="speed-control">
-    <label>語速</label>
-    <input type="range" id="speedRange" min="0.5" max="2" step="0.1" value="0.8">
-    <span class="speed-val" id="speedVal">0.8x</span>
+<!-- ===== PAGE: Reading (Dark Mode) ===== -->
+<div class="page reading-page" id="page-reading">
+  <div class="status-bar"><span id="clock4">9:41</span><span></span></div>
+  <div class="app-header">
+    <button class="back-btn visible" onclick="goBack()" style="background:rgba(255,255,255,0.1);color:white;">&#8592;</button>
+    <div style="flex:1;"></div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeAudio" onclick="setMode('audio')">Audio</button>
+      <button class="mode-btn" id="modeText" onclick="setMode('text')">Text</button>
+    </div>
+    <div style="flex:1;"></div>
   </div>
-  <div class="reading-content" id="readingContent"></div>
-  <div class="controls" id="readingControls">
-    <button class="btn btn-primary" id="btnPlayAll" onclick="playAll()">&#9654; 整篇朗讀</button>
-    <button class="btn btn-secondary" id="btnPause" onclick="togglePause()" style="display:none;">&#10074;&#10074; 暫停</button>
-    <button class="btn btn-danger" id="btnStop" onclick="stopReading()" style="display:none;">&#9632; 停止</button>
+
+  <div class="reading-body">
+    <div class="font-controls">
+      <button class="font-btn" onclick="changeFontSize(-1)">&#8722;</button>
+      <div class="font-size-display" id="fontSizeDisplay">20</div>
+      <button class="font-btn" onclick="changeFontSize(1)">+</button>
+    </div>
+
+    <div class="setting-row">
+      <label>&#127760; 語言</label>
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="langZh" onclick="setLang('zh-TW')">中文</button>
+        <button class="lang-btn" id="langEn" onclick="setLang('en-US')">English</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <label>&#128483; 語音</label>
+      <select id="voiceSelect" onchange="setSelectedVoice()">
+        <option value="">載入語音中...</option>
+      </select>
+    </div>
+
+    <div class="speed-bar">
+      <label>&#9201; 語速</label>
+      <input type="range" id="speedRange" min="0.5" max="2" step="0.1" value="0.8">
+      <span class="val" id="speedVal">0.8x</span>
+    </div>
+
+    <div class="chapter-title" id="readingTitle"></div>
+    <div class="reading-text" id="readingContent"></div>
+  </div>
+
+  <!-- Player Bar -->
+  <div class="player-bar" id="playerBar">
+    <div class="progress-row">
+      <span class="time" id="timeElapsed">00:00:00</span>
+      <div class="progress-track" id="progressTrack">
+        <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-thumb" id="progressThumb"></div>
+      </div>
+      <span class="time right" id="timeTotal">00:00:00</span>
+    </div>
+    <div class="player-controls">
+      <button class="ctrl-btn" onclick="prevParagraph()">&#9198;</button>
+      <button class="ctrl-btn" title="減速" onclick="adjustSpeed(-0.1)">&#128034;</button>
+      <button class="ctrl-btn play-btn" id="btnPlay" onclick="togglePlay()">&#9654;</button>
+      <button class="ctrl-btn" title="加速" onclick="adjustSpeed(0.1)">&#128007;</button>
+      <button class="ctrl-btn" onclick="nextParagraph()">&#9197;</button>
+    </div>
   </div>
 </div>
 
 <!-- ===== PAGE: Review ===== -->
 <div class="page" id="page-review">
-  <h2 style="margin-bottom:16px;">複習錄音</h2>
-  <div id="reviewArticleSelect" style="margin-bottom:16px;"></div>
-  <div class="card" id="reviewRecordingCard" style="display:none;">
+  <div class="status-bar"><span id="clock5">9:41</span><span></span></div>
+  <div class="app-header">
+    <button class="back-btn visible" onclick="goBack()">&#8592;</button>
+    <div class="header-title">複習錄音</div>
+  </div>
+  <div id="reviewArticleSelect"></div>
+  <div class="review-card" id="reviewRecordingCard" style="display:none;">
     <h3 id="reviewArticleTitle"></h3>
-    <div class="reading-content" id="reviewContent" style="font-size:18px;margin-bottom:16px;"></div>
+    <div class="review-content" id="reviewContent"></div>
     <div class="recording-indicator" id="recordingIndicator" style="display:none;">
-      <div class="recording-dot"></div>
+      <div class="rec-dot"></div>
       <span>錄音中...</span>
       <span id="recordTimer">00:00</span>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="btn btn-danger" id="btnRecord" onclick="toggleRecording()">&#127908; 開始錄音</button>
-      <button class="btn btn-primary" id="btnPlayRecording" onclick="playRecording()" style="display:none;">&#9654; 播放錄音</button>
-      <button class="btn btn-success" id="btnSaveRecording" onclick="saveRecording()" style="display:none;">&#128190; 儲存錄音</button>
+      <button class="btn btn-red" id="btnRecord" onclick="toggleRecording()">&#127908; 開始錄音</button>
+      <button class="btn btn-green" id="btnPlayRec" onclick="playRecording()" style="display:none;">&#9654; 播放</button>
+      <button class="btn btn-orange" id="btnSaveRec" onclick="saveRecording()" style="display:none;">&#128190; 儲存</button>
     </div>
-    <audio id="reviewAudio" style="width:100%;margin-top:12px;display:none;" controls></audio>
+    <audio id="reviewAudio" style="width:100%;margin-top:12px;display:none;border-radius:8px;" controls></audio>
   </div>
 </div>
 
 <!-- ===== PAGE: Records ===== -->
 <div class="page" id="page-records">
-  <h2 style="margin-bottom:16px;">學習紀錄</h2>
+  <div class="status-bar"><span id="clock6">9:41</span><span></span></div>
+  <div class="app-header">
+    <button class="back-btn visible" onclick="goBack()">&#8592;</button>
+    <div class="header-title">學習紀錄</div>
+  </div>
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchRecordTab('reading')">朗讀紀錄</button>
-    <button class="tab-btn" onclick="switchRecordTab('audio')">錄音紀錄</button>
+    <button class="tab-btn active" onclick="switchRecordTab(this,'reading')">朗讀紀錄</button>
+    <button class="tab-btn" onclick="switchRecordTab(this,'audio')">錄音紀錄</button>
   </div>
   <div id="readingRecords"></div>
   <div id="audioRecords" style="display:none;"></div>
@@ -439,628 +794,486 @@
     </div>
     <div class="form-group">
       <label>文章內容（空行分段）</label>
-      <textarea class="form-input" id="inputContent" placeholder="貼上或輸入文章內容...&#10;&#10;空一行即為新段落"></textarea>
+      <textarea class="form-input" id="inputContent" placeholder="貼上或輸入文章內容...&#10;&#10;空一行為新段落"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeArticleModal()">取消</button>
-      <button class="btn btn-primary" onclick="saveArticle()">儲存</button>
+      <button class="btn btn-green" onclick="saveArticle()">儲存</button>
     </div>
   </div>
 </div>
 
 <script>
 // ========================================
-// IndexedDB Setup
+// IndexedDB
 // ========================================
-const DB_NAME = 'ReadBuddyDB';
-const DB_VERSION = 1;
+const DB_NAME='ReadBuddyDB', DB_VER=1;
 let db;
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (e) => {
-      const d = e.target.result;
-      if (!d.objectStoreNames.contains('articles')) {
-        d.createObjectStore('articles', { keyPath: 'id' });
-      }
-      if (!d.objectStoreNames.contains('readingLogs')) {
-        const store = d.createObjectStore('readingLogs', { keyPath: 'id', autoIncrement: true });
-        store.createIndex('articleId', 'articleId', { unique: false });
-      }
-      if (!d.objectStoreNames.contains('recordings')) {
-        const store = d.createObjectStore('recordings', { keyPath: 'id', autoIncrement: true });
-        store.createIndex('articleId', 'articleId', { unique: false });
-      }
-    };
-    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
-    req.onerror = (e) => reject(e);
-  });
-}
-
-function dbAdd(store, data) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(store, 'readwrite');
-    const s = tx.objectStore(store);
-    const r = s.put(data);
-    r.onsuccess = () => resolve(r.result);
-    r.onerror = () => reject(r.error);
-  });
-}
-
-function dbGetAll(store) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(store, 'readonly');
-    const r = tx.objectStore(store).getAll();
-    r.onsuccess = () => resolve(r.result);
-    r.onerror = () => reject(r.error);
-  });
-}
-
-function dbGet(store, id) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(store, 'readonly');
-    const r = tx.objectStore(store).get(id);
-    r.onsuccess = () => resolve(r.result);
-    r.onerror = () => reject(r.error);
-  });
-}
-
-function dbDelete(store, id) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(store, 'readwrite');
-    const r = tx.objectStore(store).delete(id);
-    r.onsuccess = () => resolve();
-    r.onerror = () => reject(r.error);
-  });
-}
-
-function dbGetByIndex(store, indexName, value) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(store, 'readonly');
-    const idx = tx.objectStore(store).index(indexName);
-    const r = idx.getAll(value);
-    r.onsuccess = () => resolve(r.result);
-    r.onerror = () => reject(r.error);
-  });
-}
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('articles'))d.createObjectStore('articles',{keyPath:'id'});if(!d.objectStoreNames.contains('readingLogs')){const s=d.createObjectStore('readingLogs',{keyPath:'id',autoIncrement:true});s.createIndex('articleId','articleId',{unique:false});}if(!d.objectStoreNames.contains('recordings')){const s=d.createObjectStore('recordings',{keyPath:'id',autoIncrement:true});s.createIndex('articleId','articleId',{unique:false});}};r.onsuccess=e=>{db=e.target.result;res(db);};r.onerror=e=>rej(e);})}
+function dbPut(s,d){return new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');const r=t.objectStore(s).put(d);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);})}
+function dbAll(s){return new Promise((res,rej)=>{const r=db.transaction(s,'readonly').objectStore(s).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);})}
+function dbGet(s,id){return new Promise((res,rej)=>{const r=db.transaction(s,'readonly').objectStore(s).get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);})}
+function dbDel(s,id){return new Promise((res,rej)=>{const r=db.transaction(s,'readwrite').objectStore(s).delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);})}
 
 // ========================================
 // Navigation
 // ========================================
-let navStack = ['home'];
-const pageTitles = {
-  'home': 'ReadBuddy 閱讀小幫手',
-  'settings': '文章管理',
-  'reading-list': '選擇文章',
-  'reading': '閱讀',
-  'review': '複習錄音',
-  'records': '學習紀錄'
-};
-
-function navigateTo(pageId, noStack) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + pageId).classList.add('active');
-  if (!noStack) navStack.push(pageId);
-  updateHeader();
-  onPageEnter(pageId);
+let navStack=['home'];
+function navigateTo(id,noStack){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(!noStack)navStack.push(id);
+  if(id==='reading'){document.body.style.background=getComputedStyle(document.documentElement).getPropertyValue('--dark');}
+  else{document.body.style.background='';}
+  onPageEnter(id);
 }
-
-function goBack() {
-  stopReading();
-  stopRecordingIfNeeded();
-  if (navStack.length > 1) {
-    navStack.pop();
-    const prev = navStack[navStack.length - 1];
-    navigateTo(prev, true);
-  }
+function goBack(){
+  stopReading();stopRecIfNeeded();
+  if(navStack.length>1){navStack.pop();navigateTo(navStack[navStack.length-1],true);}
 }
-
-function updateHeader() {
-  const current = navStack[navStack.length - 1];
-  document.getElementById('headerTitle').textContent = pageTitles[current] || 'ReadBuddy';
-  document.getElementById('backBtn').classList.toggle('visible', current !== 'home');
+async function onPageEnter(id){
+  if(id==='home')renderRecentArticles();
+  if(id==='settings')renderArticleList();
+  if(id==='reading-list')renderReadingList();
+  if(id==='review')renderReviewPage();
+  if(id==='records')renderRecords();
 }
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
-async function onPageEnter(pageId) {
-  if (pageId === 'settings') await renderArticleList();
-  if (pageId === 'reading-list') await renderReadingArticleList();
-  if (pageId === 'review') await renderReviewPage();
-  if (pageId === 'records') await renderRecords();
-}
+// Clock
+function updateClock(){const n=new Date();const t=n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');document.querySelectorAll('[id^=clock]').forEach(e=>e.textContent=t);document.getElementById('clockDisplay').textContent=t;}
+setInterval(updateClock,30000);updateClock();
 
 // ========================================
-// Toast
+// Articles CRUD
 // ========================================
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
+let editingId=null;
+const articleColors=['#E8F5E9','#FFF3E0','#E3F2FD','#FCE4EC','#F3E5F5','#E0F7FA','#FFF9C4'];
+const articleIcons=['&#128218;','&#128214;','&#128213;','&#128217;','&#128216;','&#128215;','&#128211;'];
+function getArticleVisual(idx){return{bg:articleColors[idx%articleColors.length],icon:articleIcons[idx%articleIcons.length]};}
 
-// ========================================
-// Settings: Article CRUD
-// ========================================
-let editingArticleId = null;
-
-function openArticleModal(articleId) {
-  editingArticleId = articleId || null;
-  document.getElementById('modalTitle').textContent = articleId ? '編輯文章' : '新增文章';
-  document.getElementById('inputTitle').value = '';
-  document.getElementById('inputContent').value = '';
-
-  if (articleId) {
-    dbGet('articles', articleId).then(a => {
-      if (a) {
-        document.getElementById('inputTitle').value = a.title;
-        document.getElementById('inputContent').value = a.paragraphs.join('\n\n');
-      }
-    });
-  }
+function openArticleModal(id){
+  editingId=id||null;
+  document.getElementById('modalTitle').textContent=id?'編輯文章':'新增文章';
+  document.getElementById('inputTitle').value='';
+  document.getElementById('inputContent').value='';
+  if(id){dbGet('articles',id).then(a=>{if(a){document.getElementById('inputTitle').value=a.title;document.getElementById('inputContent').value=a.paragraphs.join('\n\n');}});}
   document.getElementById('articleModal').classList.add('active');
 }
+function closeArticleModal(){document.getElementById('articleModal').classList.remove('active');editingId=null;}
 
-function closeArticleModal() {
-  document.getElementById('articleModal').classList.remove('active');
-  editingArticleId = null;
-}
-
-async function saveArticle() {
-  const title = document.getElementById('inputTitle').value.trim();
-  const content = document.getElementById('inputContent').value.trim();
-  if (!title || !content) { showToast('請輸入標題和內容'); return; }
-
-  const paragraphs = content.split(/\n\s*\n/).map(p => p.trim()).filter(p => p);
-  const article = {
-    id: editingArticleId || 'art_' + Date.now(),
-    title,
-    paragraphs,
-    createdAt: editingArticleId ? undefined : new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  if (editingArticleId) {
-    const existing = await dbGet('articles', editingArticleId);
-    if (existing) article.createdAt = existing.createdAt;
-  }
-
-  await dbAdd('articles', article);
+async function saveArticle(){
+  const title=document.getElementById('inputTitle').value.trim();
+  const content=document.getElementById('inputContent').value.trim();
+  if(!title||!content){showToast('請輸入標題和內容');return;}
+  const paragraphs=content.split(/\n\s*\n/).map(p=>p.trim()).filter(p=>p);
+  const art={id:editingId||'art_'+Date.now(),title,paragraphs,updatedAt:new Date().toISOString()};
+  if(editingId){const ex=await dbGet('articles',editingId);if(ex)art.createdAt=ex.createdAt;}
+  if(!art.createdAt)art.createdAt=art.updatedAt;
+  await dbPut('articles',art);
   closeArticleModal();
-  showToast(editingArticleId ? '文章已更新' : '文章已新增');
-  await renderArticleList();
+  showToast(editingId?'文章已更新':'文章已新增');
+  renderArticleList();
 }
+async function deleteArticle(id){if(!confirm('確定刪除？'))return;await dbDel('articles',id);showToast('已刪除');renderArticleList();}
 
-async function deleteArticle(id) {
-  if (!confirm('確定刪除這篇文章？')) return;
-  await dbDelete('articles', id);
-  showToast('文章已刪除');
-  await renderArticleList();
-}
-
-async function renderArticleList() {
-  const articles = await dbGetAll('articles');
-  const container = document.getElementById('articleList');
-  if (articles.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">&#128221;</div><p>還沒有文章，點選右上角新增</p></div>';
-    return;
-  }
-  container.innerHTML = articles.map(a => `
-    <div class="article-item">
-      <div class="info">
-        <h4>${escHtml(a.title)}</h4>
-        <p>${a.paragraphs.length} 段落 · ${a.paragraphs.join('').length} 字</p>
-      </div>
+async function renderArticleList(){
+  const arts=await dbAll('articles');
+  const c=document.getElementById('articleList');
+  if(!arts.length){c.innerHTML='<div class="empty-state"><div class="icon">&#128221;</div><p>點選上方按鈕新增文章</p></div>';return;}
+  c.innerHTML=arts.map((a,i)=>{const v=getArticleVisual(i);return`
+    <div class="article-card">
+      <div class="thumb" style="background:${v.bg}">${v.icon}</div>
+      <div class="info"><h4>${esc(a.title)}</h4><div class="meta">${a.paragraphs.length} 段落 · ${a.paragraphs.join('').length} 字</div></div>
       <div class="actions">
-        <button class="edit-btn" onclick="event.stopPropagation();openArticleModal('${a.id}')">&#9998;</button>
-        <button class="del-btn" onclick="event.stopPropagation();deleteArticle('${a.id}')">&#128465;</button>
+        <button class="icon-btn-edit" onclick="event.stopPropagation();openArticleModal('${a.id}')">&#9998;</button>
+        <button class="icon-btn-del" onclick="event.stopPropagation();deleteArticle('${a.id}')">&#128465;</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;}).join('');
+}
+
+async function renderRecentArticles(){
+  const arts=await dbAll('articles');
+  const c=document.getElementById('recentArticles');
+  if(!arts.length){c.innerHTML='<div style="flex:0 0 100%;text-align:center;padding:30px 0;color:var(--text-secondary);font-size:14px;">尚無文章，請先到設定新增</div>';return;}
+  c.innerHTML=arts.slice(-6).reverse().map((a,i)=>{const v=getArticleVisual(i);return`
+    <div class="feature-card" onclick="openReading('${a.id}')">
+      <div class="card-img" style="background:${v.bg}">${v.icon}<span class="badge">${a.paragraphs.length} 段</span></div>
+      <div class="card-body"><h4>${esc(a.title)}</h4><p>${a.paragraphs.join('').length} 字</p></div>
+    </div>`;}).join('');
+}
+
+async function renderReadingList(){
+  const arts=await dbAll('articles');
+  const c=document.getElementById('readingArticleList');
+  if(!arts.length){c.innerHTML='<div class="empty-state"><div class="icon">&#128214;</div><p>請先到設定新增文章</p></div>';return;}
+  c.innerHTML=arts.map((a,i)=>{const v=getArticleVisual(i);return`
+    <div class="article-card" onclick="openReading('${a.id}')">
+      <div class="thumb" style="background:${v.bg}">${v.icon}</div>
+      <div class="info"><h4>${esc(a.title)}</h4><div class="meta">${a.paragraphs.length} 段落 · ${a.paragraphs.join('').length} 字</div></div>
+      <div style="color:var(--green);font-size:22px;">&#9654;</div>
+    </div>`;}).join('');
 }
 
 // ========================================
-// Reading List
+// Import Article
 // ========================================
-async function renderReadingArticleList() {
-  const articles = await dbGetAll('articles');
-  const container = document.getElementById('readingArticleList');
-  if (articles.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">&#128214;</div><p>請先到「設定」新增文章</p></div>';
+async function importArticle(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const text=await file.text();
+  const name=file.name.replace(/\.[^.]+$/,'');
+  const paragraphs=text.split(/\n\s*\n/).map(p=>p.trim()).filter(p=>p);
+  if(!paragraphs.length){showToast('檔案內容為空');return;}
+  const art={id:'art_'+Date.now(),title:name,paragraphs,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  await dbPut('articles',art);
+  showToast('已匯入：'+name);
+  renderArticleList();
+  event.target.value='';
+}
+
+// ========================================
+// Voice & Language
+// ========================================
+let allVoices=[];
+let currentLang='zh-TW';
+let selectedVoiceURI='';
+const voiceLabels={};  // map voiceURI -> friendly label
+
+function loadVoices(){
+  allVoices=window.speechSynthesis.getVoices();
+  populateVoiceSelect();
+}
+window.speechSynthesis.onvoiceschanged=loadVoices;
+setTimeout(loadVoices,500); // fallback
+
+function populateVoiceSelect(){
+  const sel=document.getElementById('voiceSelect');
+  const filtered=allVoices.filter(v=>v.lang.startsWith(currentLang.split('-')[0]));
+  if(!filtered.length){
+    // fallback: show all voices with matching prefix or all
+    const fallback=allVoices.filter(v=>v.lang.includes(currentLang==='zh-TW'?'zh':'en'));
+    renderVoiceOptions(fallback.length?fallback:allVoices);
     return;
   }
-  container.innerHTML = articles.map(a => `
-    <div class="article-item" onclick="openReading('${a.id}')">
-      <div class="info">
-        <h4>${escHtml(a.title)}</h4>
-        <p>${a.paragraphs.length} 段落 · ${a.paragraphs.join('').length} 字</p>
-      </div>
-      <div style="font-size:24px;color:var(--primary);">&#9654;</div>
-    </div>
-  `).join('');
+  renderVoiceOptions(filtered);
+}
+
+function renderVoiceOptions(voices){
+  const sel=document.getElementById('voiceSelect');
+  // Categorize voices into male/female groups
+  let maleCount=0, femaleCount=0;
+  sel.innerHTML='';
+
+  voices.forEach((v,i)=>{
+    const opt=document.createElement('option');
+    opt.value=v.voiceURI;
+    // Attempt to determine gender from voice name
+    const nameLower=v.name.toLowerCase();
+    let label='';
+    if(nameLower.includes('female')||nameLower.includes('woman')||nameLower.match(/\b(zira|hazel|susan|linda|heera|huihui|tracy|yating|hanhan|xiaoxiao|xiaoyi|jenny|aria|sara|amy|emma|joanna|salli|kendra|ivy|zhiwei|meijia)\b/i)){
+      femaleCount++;
+      label='女生 '+femaleCount+' ('+v.name.split(' ').slice(0,3).join(' ')+')';
+    } else if(nameLower.includes('male')||nameLower.includes('man ')||nameLower.match(/\b(david|mark|james|george|richard|daniel|ryan|guy|matthew|brian|joey|justin|kevin|yunyang|yunxi|kangkang|zhiyu)\b/i)){
+      maleCount++;
+      label='男生 '+maleCount+' ('+v.name.split(' ').slice(0,3).join(' ')+')';
+    } else {
+      // Can't determine, just use name
+      label=v.name;
+    }
+    opt.textContent=label;
+    voiceLabels[v.voiceURI]=label;
+    sel.appendChild(opt);
+  });
+
+  // Select previously chosen or first
+  if(selectedVoiceURI && voices.find(v=>v.voiceURI===selectedVoiceURI)){
+    sel.value=selectedVoiceURI;
+  } else if(voices.length){
+    sel.value=voices[0].voiceURI;
+    selectedVoiceURI=voices[0].voiceURI;
+  }
+}
+
+function setSelectedVoice(){
+  selectedVoiceURI=document.getElementById('voiceSelect').value;
+}
+
+function setLang(lang){
+  currentLang=lang;
+  document.getElementById('langZh').classList.toggle('active',lang==='zh-TW');
+  document.getElementById('langEn').classList.toggle('active',lang==='en-US');
+  populateVoiceSelect();
+  // If currently speaking, stop
+  if(speaking)stopReading();
+}
+
+function getSelectedVoice(){
+  if(!selectedVoiceURI)return null;
+  return allVoices.find(v=>v.voiceURI===selectedVoiceURI)||null;
 }
 
 // ========================================
 // Reading (TTS)
 // ========================================
-let currentArticle = null;
-let currentParaIndex = -1;
-let isSpeaking = false;
-let isPaused = false;
-let readStartTime = null;
+let curArticle=null, curPara=-1, speaking=false, paused=false, readStart=null;
+let readingTimer=null, elapsedSec=0;
+let fontSize=20;
 
-document.getElementById('speedRange').addEventListener('input', function() {
-  document.getElementById('speedVal').textContent = this.value + 'x';
-});
+document.getElementById('speedRange').addEventListener('input',function(){document.getElementById('speedVal').textContent=this.value+'x';});
 
-async function openReading(articleId) {
-  currentArticle = await dbGet('articles', articleId);
-  if (!currentArticle) return;
-  document.getElementById('readingTitle').textContent = currentArticle.title;
+function changeFontSize(delta){
+  fontSize=Math.max(14,Math.min(32,fontSize+delta));
+  document.getElementById('fontSizeDisplay').textContent=fontSize;
+  const el=document.getElementById('readingContent');
+  if(el)el.style.fontSize=fontSize+'px';
+}
+function setMode(mode){
+  document.getElementById('modeAudio').classList.toggle('active',mode==='audio');
+  document.getElementById('modeText').classList.toggle('active',mode==='text');
+  document.getElementById('playerBar').style.display=mode==='audio'?'':'none';
+  document.querySelector('.speed-bar').style.display=mode==='audio'?'':'none';
+}
 
-  const container = document.getElementById('readingContent');
-  container.innerHTML = currentArticle.paragraphs.map((p, i) => `
-    <div class="paragraph" data-index="${i}" onclick="playParagraph(${i})">${escHtml(p)}</div>
-  `).join('');
-
-  resetReadingUI();
+async function openReading(id){
+  curArticle=await dbGet('articles',id);
+  if(!curArticle)return;
+  document.getElementById('readingTitle').textContent=curArticle.title;
+  const c=document.getElementById('readingContent');
+  c.style.fontSize=fontSize+'px';
+  c.innerHTML=curArticle.paragraphs.map((p,i)=>`<div class="para" data-i="${i}" onclick="playParagraph(${i})">${esc(p)}</div>`).join('');
+  resetReadUI();
   navigateTo('reading');
 }
 
-function resetReadingUI() {
-  document.getElementById('btnPlayAll').style.display = '';
-  document.getElementById('btnPause').style.display = 'none';
-  document.getElementById('btnStop').style.display = 'none';
-  document.querySelectorAll('.paragraph').forEach(p => {
-    p.classList.remove('active', 'speaking');
-  });
-  currentParaIndex = -1;
-  isSpeaking = false;
-  isPaused = false;
+function resetReadUI(){
+  curPara=-1;speaking=false;paused=false;elapsedSec=0;
+  clearInterval(readingTimer);
+  updatePlayBtn();updateTimeDisplay();updateProgress();
+  document.querySelectorAll('.para').forEach(p=>p.classList.remove('speaking'));
 }
 
-function playAll() {
-  if (!currentArticle) return;
-  currentParaIndex = 0;
-  readStartTime = Date.now();
-  speakParagraph(0, true);
-  document.getElementById('btnPlayAll').style.display = 'none';
-  document.getElementById('btnPause').style.display = '';
-  document.getElementById('btnStop').style.display = '';
+function updatePlayBtn(){
+  const btn=document.getElementById('btnPlay');
+  btn.innerHTML=speaking&&!paused?'&#10074;&#10074;':'&#9654;';
 }
 
-function playParagraph(index) {
-  if (isSpeaking) stopReading();
-  currentParaIndex = index;
-  readStartTime = Date.now();
-  speakParagraph(index, false);
-  document.getElementById('btnPlayAll').style.display = 'none';
-  document.getElementById('btnPause').style.display = '';
-  document.getElementById('btnStop').style.display = '';
+function togglePlay(){
+  if(!curArticle)return;
+  if(speaking&&!paused){pauseReading();}
+  else if(paused){resumeReading();}
+  else{playAll();}
 }
 
-function speakParagraph(index, continueNext) {
-  if (!currentArticle || index >= currentArticle.paragraphs.length) {
-    finishReading();
-    return;
-  }
+function playAll(){
+  curPara=0;readStart=Date.now();elapsedSec=0;
+  speakPara(0,true);
+  startTimer();
+}
 
+function playParagraph(i){
+  if(speaking)stopReading();
+  curPara=i;readStart=Date.now();elapsedSec=0;
+  speakPara(i,false);
+  startTimer();
+}
+
+function speakPara(i,cont){
+  if(!curArticle||i>=curArticle.paragraphs.length){finishReading();return;}
   window.speechSynthesis.cancel();
-  isSpeaking = true;
-  isPaused = false;
-
-  highlightParagraph(index);
-
-  const utterance = new SpeechSynthesisUtterance(currentArticle.paragraphs[index]);
-  utterance.lang = 'zh-TW';
-  utterance.rate = parseFloat(document.getElementById('speedRange').value);
-
-  utterance.onend = () => {
-    if (continueNext && isSpeaking) {
-      currentParaIndex = index + 1;
-      speakParagraph(index + 1, true);
-    } else if (!continueNext) {
-      finishReading();
-    }
-  };
-
-  utterance.onerror = (e) => {
-    if (e.error !== 'canceled') finishReading();
-  };
-
-  window.speechSynthesis.speak(utterance);
-  updatePauseBtn();
+  speaking=true;paused=false;
+  highlightPara(i);
+  const u=new SpeechSynthesisUtterance(curArticle.paragraphs[i]);
+  u.lang=currentLang;
+  u.rate=parseFloat(document.getElementById('speedRange').value);
+  const voice=getSelectedVoice();
+  if(voice)u.voice=voice;
+  u.onend=()=>{if(cont&&speaking){curPara=i+1;speakPara(i+1,true);}else if(!cont){finishReading();}};
+  u.onerror=e=>{if(e.error!=='canceled')finishReading();};
+  window.speechSynthesis.speak(u);
+  updatePlayBtn();
 }
 
-function togglePause() {
-  if (isPaused) {
-    window.speechSynthesis.resume();
-    isPaused = false;
-  } else {
-    window.speechSynthesis.pause();
-    isPaused = true;
-  }
-  updatePauseBtn();
-}
+function pauseReading(){window.speechSynthesis.pause();paused=true;clearInterval(readingTimer);updatePlayBtn();}
+function resumeReading(){window.speechSynthesis.resume();paused=false;startTimer();updatePlayBtn();}
 
-function updatePauseBtn() {
-  const btn = document.getElementById('btnPause');
-  btn.innerHTML = isPaused ? '&#9654; 繼續' : '&#10074;&#10074; 暫停';
-}
-
-function stopReading() {
+function stopReading(){
   window.speechSynthesis.cancel();
-  if (isSpeaking && readStartTime) {
-    logReading();
-  }
-  isSpeaking = false;
-  isPaused = false;
-  resetReadingUI();
+  if(speaking&&readStart)logReading();
+  speaking=false;paused=false;clearInterval(readingTimer);
+  resetReadUI();
 }
 
-function finishReading() {
-  if (readStartTime) logReading();
-  isSpeaking = false;
-  resetReadingUI();
+function finishReading(){
+  if(readStart)logReading();
+  speaking=false;clearInterval(readingTimer);
+  resetReadUI();
   showToast('朗讀完畢！');
 }
 
-async function logReading() {
-  if (!currentArticle || !readStartTime) return;
-  const duration = Math.round((Date.now() - readStartTime) / 1000);
-  await dbAdd('readingLogs', {
-    articleId: currentArticle.id,
-    articleTitle: currentArticle.title,
-    date: new Date().toISOString(),
-    durationSeconds: duration
-  });
-  readStartTime = null;
+function prevParagraph(){if(!curArticle||curPara<=0)return;stopReading();playParagraph(curPara-1);}
+function nextParagraph(){if(!curArticle||curPara>=curArticle.paragraphs.length-1)return;stopReading();playParagraph(curPara+1);}
+
+function adjustSpeed(d){
+  const r=document.getElementById('speedRange');
+  let v=Math.round((parseFloat(r.value)+d)*10)/10;
+  v=Math.max(0.5,Math.min(2,v));
+  r.value=v;
+  document.getElementById('speedVal').textContent=v+'x';
 }
 
-function highlightParagraph(index) {
-  document.querySelectorAll('.paragraph').forEach(p => {
-    p.classList.remove('active', 'speaking');
-  });
-  const el = document.querySelector(`.paragraph[data-index="${index}"]`);
-  if (el) {
-    el.classList.add('speaking');
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+function highlightPara(i){
+  document.querySelectorAll('.para').forEach(p=>p.classList.remove('speaking'));
+  const el=document.querySelector(`.para[data-i="${i}"]`);
+  if(el){el.classList.add('speaking');el.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+
+function startTimer(){
+  clearInterval(readingTimer);
+  readingTimer=setInterval(()=>{elapsedSec++;updateTimeDisplay();updateProgress();},1000);
+}
+function updateTimeDisplay(){document.getElementById('timeElapsed').textContent=fmtTime(elapsedSec);
+  const total=curArticle?curArticle.paragraphs.join('').length/3:0; // rough estimate
+  document.getElementById('timeTotal').textContent=fmtTime(Math.max(total,elapsedSec));
+}
+function updateProgress(){
+  if(!curArticle||curArticle.paragraphs.length===0)return;
+  const pct=Math.min(100,((curPara+1)/curArticle.paragraphs.length)*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressThumb').style.left=pct+'%';
+}
+function fmtTime(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
+
+async function logReading(){
+  if(!curArticle||!readStart)return;
+  const dur=Math.round((Date.now()-readStart)/1000);
+  await dbPut('readingLogs',{articleId:curArticle.id,articleTitle:curArticle.title,date:new Date().toISOString(),durationSeconds:dur});
+  readStart=null;
 }
 
 // ========================================
 // Review (Recording)
 // ========================================
-let mediaRecorder = null;
-let audioChunks = [];
-let recordedBlob = null;
-let recordTimerInterval = null;
-let recordSeconds = 0;
-let reviewArticleId = null;
+let mediaRec=null,audioChunks=[],recBlob=null,recTimer=null,recSec=0,reviewArtId=null;
 
-async function renderReviewPage() {
-  const articles = await dbGetAll('articles');
-  const container = document.getElementById('reviewArticleSelect');
-  if (articles.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">&#127908;</div><p>請先到「設定」新增文章</p></div>';
-    document.getElementById('reviewRecordingCard').style.display = 'none';
+async function renderReviewPage(){
+  const arts=await dbAll('articles');
+  const c=document.getElementById('reviewArticleSelect');
+  if(!arts.length){c.innerHTML='<div class="empty-state"><div class="icon">&#127908;</div><p>請先新增文章</p></div>';document.getElementById('reviewRecordingCard').style.display='none';return;}
+  c.innerHTML=arts.map((a,i)=>{const v=getArticleVisual(i);return`
+    <div class="article-card" onclick="selectReviewArt('${a.id}')">
+      <div class="thumb" style="background:${v.bg}">${v.icon}</div>
+      <div class="info"><h4>${esc(a.title)}</h4><div class="meta">${a.paragraphs.length} 段落</div></div>
+      <div style="color:var(--accent-warm);font-size:22px;">&#127908;</div>
+    </div>`;}).join('');
+}
+
+async function selectReviewArt(id){
+  const a=await dbGet('articles',id);if(!a)return;
+  reviewArtId=id;
+  document.getElementById('reviewArticleTitle').textContent=a.title;
+  document.getElementById('reviewContent').innerHTML=a.paragraphs.map(p=>`<p style="margin-bottom:10px;">${esc(p)}</p>`).join('');
+  document.getElementById('reviewRecordingCard').style.display='';
+  resetRecUI();
+}
+
+function resetRecUI(){
+  document.getElementById('btnRecord').innerHTML='&#127908; 開始錄音';
+  document.getElementById('btnPlayRec').style.display='none';
+  document.getElementById('btnSaveRec').style.display='none';
+  document.getElementById('recordingIndicator').style.display='none';
+  document.getElementById('reviewAudio').style.display='none';
+  recBlob=null;
+}
+
+async function toggleRecording(){
+  if(mediaRec&&mediaRec.state==='recording'){
+    mediaRec.stop();clearInterval(recTimer);
+    document.getElementById('btnRecord').innerHTML='&#127908; 重新錄音';
+    document.getElementById('recordingIndicator').style.display='none';
     return;
   }
-
-  container.innerHTML = articles.map(a => `
-    <div class="article-item" onclick="selectReviewArticle('${a.id}')">
-      <div class="info">
-        <h4>${escHtml(a.title)}</h4>
-        <p>${a.paragraphs.length} 段落</p>
-      </div>
-      <div style="font-size:20px;color:var(--secondary);">&#127908;</div>
-    </div>
-  `).join('');
-}
-
-async function selectReviewArticle(articleId) {
-  const article = await dbGet('articles', articleId);
-  if (!article) return;
-  reviewArticleId = articleId;
-  document.getElementById('reviewArticleTitle').textContent = article.title;
-  document.getElementById('reviewContent').innerHTML = article.paragraphs.map(p => `<p>${escHtml(p)}</p>`).join('');
-  document.getElementById('reviewRecordingCard').style.display = '';
-  resetRecordingUI();
-}
-
-function resetRecordingUI() {
-  document.getElementById('btnRecord').innerHTML = '&#127908; 開始錄音';
-  document.getElementById('btnRecord').className = 'btn btn-danger';
-  document.getElementById('btnPlayRecording').style.display = 'none';
-  document.getElementById('btnSaveRecording').style.display = 'none';
-  document.getElementById('recordingIndicator').style.display = 'none';
-  document.getElementById('reviewAudio').style.display = 'none';
-  recordedBlob = null;
-}
-
-async function toggleRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    clearInterval(recordTimerInterval);
-    document.getElementById('btnRecord').innerHTML = '&#127908; 重新錄音';
-    document.getElementById('recordingIndicator').style.display = 'none';
-    return;
-  }
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    audioChunks = [];
-    mediaRecorder = new MediaRecorder(stream);
-
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) audioChunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = () => {
-      recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      const url = URL.createObjectURL(recordedBlob);
-      const audio = document.getElementById('reviewAudio');
-      audio.src = url;
-      audio.style.display = '';
-      document.getElementById('btnPlayRecording').style.display = '';
-      document.getElementById('btnSaveRecording').style.display = '';
-      stream.getTracks().forEach(t => t.stop());
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    audioChunks=[];
+    mediaRec=new MediaRecorder(stream);
+    mediaRec.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};
+    mediaRec.onstop=()=>{
+      recBlob=new Blob(audioChunks,{type:'audio/webm'});
+      const url=URL.createObjectURL(recBlob);
+      const aud=document.getElementById('reviewAudio');
+      aud.src=url;aud.style.display='';
+      document.getElementById('btnPlayRec').style.display='';
+      document.getElementById('btnSaveRec').style.display='';
+      stream.getTracks().forEach(t=>t.stop());
       showToast('錄音完成');
     };
-
-    mediaRecorder.start();
-    recordSeconds = 0;
-    document.getElementById('recordTimer').textContent = '00:00';
-    document.getElementById('recordingIndicator').style.display = 'flex';
-    document.getElementById('btnRecord').innerHTML = '&#9632; 停止錄音';
-    document.getElementById('btnPlayRecording').style.display = 'none';
-    document.getElementById('btnSaveRecording').style.display = 'none';
-
-    recordTimerInterval = setInterval(() => {
-      recordSeconds++;
-      const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
-      const s = String(recordSeconds % 60).padStart(2, '0');
-      document.getElementById('recordTimer').textContent = m + ':' + s;
-    }, 1000);
-
-  } catch (err) {
-    showToast('無法取得麥克風權限');
-  }
+    mediaRec.start();
+    recSec=0;
+    document.getElementById('recordTimer').textContent='00:00';
+    document.getElementById('recordingIndicator').style.display='flex';
+    document.getElementById('btnRecord').innerHTML='&#9632; 停止錄音';
+    document.getElementById('btnPlayRec').style.display='none';
+    document.getElementById('btnSaveRec').style.display='none';
+    recTimer=setInterval(()=>{recSec++;document.getElementById('recordTimer').textContent=String(Math.floor(recSec/60)).padStart(2,'0')+':'+String(recSec%60).padStart(2,'0');},1000);
+  }catch(e){showToast('無法取得麥克風權限');}
 }
-
-function stopRecordingIfNeeded() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    clearInterval(recordTimerInterval);
-  }
-}
-
-function playRecording() {
-  const audio = document.getElementById('reviewAudio');
-  audio.play();
-}
-
-async function saveRecording() {
-  if (!recordedBlob || !reviewArticleId) return;
-
-  const reader = new FileReader();
-  reader.onloadend = async () => {
-    await dbAdd('recordings', {
-      articleId: reviewArticleId,
-      articleTitle: document.getElementById('reviewArticleTitle').textContent,
-      date: new Date().toISOString(),
-      audioData: reader.result,
-      durationSeconds: recordSeconds
-    });
-    showToast('錄音已儲存');
-    resetRecordingUI();
-  };
-  reader.readAsDataURL(recordedBlob);
+function stopRecIfNeeded(){if(mediaRec&&mediaRec.state==='recording'){mediaRec.stop();clearInterval(recTimer);}}
+function playRecording(){document.getElementById('reviewAudio').play();}
+async function saveRecording(){
+  if(!recBlob||!reviewArtId)return;
+  const reader=new FileReader();
+  reader.onloadend=async()=>{
+    await dbPut('recordings',{articleId:reviewArtId,articleTitle:document.getElementById('reviewArticleTitle').textContent,date:new Date().toISOString(),audioData:reader.result,durationSeconds:recSec});
+    showToast('錄音已儲存');resetRecUI();
+  };reader.readAsDataURL(recBlob);
 }
 
 // ========================================
 // Records
 // ========================================
-function switchRecordTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('readingRecords').style.display = tab === 'reading' ? '' : 'none';
-  document.getElementById('audioRecords').style.display = tab === 'audio' ? '' : 'none';
+function switchRecordTab(el,tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('readingRecords').style.display=tab==='reading'?'':'none';
+  document.getElementById('audioRecords').style.display=tab==='audio'?'':'none';
 }
 
-async function renderRecords() {
-  // Reading logs
-  const logs = await dbGetAll('readingLogs');
-  const logContainer = document.getElementById('readingRecords');
-
-  if (logs.length === 0) {
-    logContainer.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div><p>還沒有朗讀紀錄</p></div>';
-  } else {
-    // Group by article
-    const grouped = {};
-    logs.forEach(l => {
-      if (!grouped[l.articleId]) {
-        grouped[l.articleId] = { title: l.articleTitle, count: 0, totalDuration: 0, lastDate: l.date };
-      }
-      grouped[l.articleId].count++;
-      grouped[l.articleId].totalDuration += l.durationSeconds;
-      if (l.date > grouped[l.articleId].lastDate) grouped[l.articleId].lastDate = l.date;
-    });
-
-    logContainer.innerHTML = Object.entries(grouped).map(([id, g]) => `
+async function renderRecords(){
+  const logs=await dbAll('readingLogs');
+  const lc=document.getElementById('readingRecords');
+  if(!logs.length){lc.innerHTML='<div class="empty-state"><div class="icon">&#128202;</div><p>還沒有朗讀紀錄</p></div>';}
+  else{
+    const g={};logs.forEach(l=>{if(!g[l.articleId])g[l.articleId]={title:l.articleTitle,count:0,total:0,last:l.date};g[l.articleId].count++;g[l.articleId].total+=l.durationSeconds;if(l.date>g[l.articleId].last)g[l.articleId].last=l.date;});
+    lc.innerHTML=Object.entries(g).map(([id,v])=>`
       <div class="record-item">
-        <h4>${escHtml(g.title)}</h4>
-        <div class="meta">
-          <span>&#128337; 朗讀 ${g.count} 次</span>
-          <span>&#9201; 共 ${formatDuration(g.totalDuration)}</span>
-        </div>
-        <div class="meta">
-          <span>最近: ${formatDate(g.lastDate)}</span>
-        </div>
-      </div>
-    `).join('');
+        <h4>${esc(v.title)}</h4>
+        <div class="meta"><span>&#128337; ${v.count} 次</span><span>&#9201; ${fmtDur(v.total)}</span><span>&#128197; ${fmtDate(v.last)}</span></div>
+      </div>`).join('');
   }
-
-  // Audio recordings
-  const recordings = await dbGetAll('recordings');
-  const audioContainer = document.getElementById('audioRecords');
-
-  if (recordings.length === 0) {
-    audioContainer.innerHTML = '<div class="empty-state"><div class="icon">&#127908;</div><p>還沒有錄音紀錄</p></div>';
-  } else {
-    audioContainer.innerHTML = recordings.sort((a, b) => b.date.localeCompare(a.date)).map(r => `
+  const recs=await dbAll('recordings');
+  const ac=document.getElementById('audioRecords');
+  if(!recs.length){ac.innerHTML='<div class="empty-state"><div class="icon">&#127908;</div><p>還沒有錄音紀錄</p></div>';}
+  else{
+    ac.innerHTML=recs.sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`
       <div class="record-item">
-        <h4>${escHtml(r.articleTitle)}</h4>
-        <div class="meta">
-          <span>&#128197; ${formatDate(r.date)}</span>
-          <span>&#9201; ${formatDuration(r.durationSeconds)}</span>
-        </div>
-        <audio controls src="${r.audioData}" style="width:100%;"></audio>
-        <button class="btn btn-danger btn-sm del-audio-btn" onclick="deleteRecording(${r.id})">&#128465; 刪除</button>
-      </div>
-    `).join('');
+        <h4>${esc(r.articleTitle)}</h4>
+        <div class="meta"><span>&#128197; ${fmtDate(r.date)}</span><span>&#9201; ${fmtDur(r.durationSeconds)}</span></div>
+        <audio controls src="${r.audioData}" style="width:100%;border-radius:8px;"></audio>
+        <button class="btn btn-red btn-sm" style="margin-top:8px;" onclick="delRec(${r.id})">&#128465; 刪除</button>
+      </div>`).join('');
   }
 }
 
-async function deleteRecording(id) {
-  if (!confirm('確定刪除這筆錄音？')) return;
-  await dbDelete('recordings', id);
-  showToast('錄音已刪除');
-  await renderRecords();
-}
-
-// ========================================
-// Helpers
-// ========================================
-function escHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function formatDuration(sec) {
-  if (sec < 60) return sec + ' 秒';
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return m + ' 分 ' + s + ' 秒';
-}
-
-function formatDate(iso) {
-  const d = new Date(iso);
-  return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
-    String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-}
+async function delRec(id){if(!confirm('確定刪除？'))return;await dbDel('recordings',id);showToast('已刪除');renderRecords();}
+function fmtDur(s){if(s<60)return s+' 秒';return Math.floor(s/60)+' 分 '+(s%60)+' 秒';}
+function fmtDate(iso){const d=new Date(iso);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 
 // ========================================
 // Init
 // ========================================
-openDB().then(() => {
-  updateHeader();
-}).catch(err => {
-  console.error('DB Error:', err);
-  showToast('資料庫載入失敗');
-});
+openDB().then(()=>{onPageEnter('home');}).catch(e=>{console.error(e);showToast('資料庫錯誤');});
 </script>
-
 </body>
 </html>

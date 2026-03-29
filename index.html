@@ -702,8 +702,8 @@ textarea.form-input { min-height: 180px; resize: vertical; line-height: 1.8; }
     <div class="setting-row">
       <label>&#127760; 語言</label>
       <div class="lang-toggle">
-        <button class="lang-btn active" id="langZh" onclick="setLang('zh-TW')">中文</button>
-        <button class="lang-btn" id="langEn" onclick="setLang('en-US')">English</button>
+        <button class="lang-btn" id="langZh" onclick="setLang('zh-TW')">中文</button>
+        <button class="lang-btn active" id="langEn" onclick="setLang('en-US')">English</button>
       </div>
     </div>
 
@@ -937,7 +937,7 @@ async function importArticle(event){
 // Voice & Language
 // ========================================
 let allVoices=[];
-let currentLang='zh-TW';
+let currentLang='en-US';
 let selectedVoiceURI='';
 const voiceLabels={};  // map voiceURI -> friendly label
 
